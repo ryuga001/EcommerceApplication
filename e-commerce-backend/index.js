@@ -1,4 +1,4 @@
-const port = 4000;
+require('dotenv').config();
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -7,17 +7,22 @@ const multer = require("multer");
 const path = require("path");
 const cors = require("cors");
 
+const port = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cors());
 
+const host = process.env.HOST;
 // Database Connection With MongoDB
-mongoose.connect("mongodb+srv://ryuga:ryuga@cluster0.i8eyhvp.mongodb.net/e-commerce");
-
+async function main() {
+  await mongoose.connect(process.env.MONGO_URL);
+  console.log('database connected');
+}
+main();
 //Image Storage Engine 
 const storage = multer.diskStorage({
   destination: './upload/images',
   filename: (req, file, cb) => {
-    console.log(file);
+    // console.log(file);
     return cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`)
   }
 })
@@ -25,7 +30,7 @@ const upload = multer({ storage: storage })
 app.post("/upload", upload.single('product'), (req, res) => {
   res.json({
     success: 1,
-    image_url: `http://localhost:4000/images/${req.file.filename}`
+    image_url: `${host}/images/${req.file.filename}`
   })
 })
 app.use('/images', express.static('upload/images'));
